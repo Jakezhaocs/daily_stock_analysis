@@ -1,0 +1,36 @@
+# LLM 模型配置（适配 DeepSeek API）
+# 复制此文件为 llm_config.yaml 后替换 API Key 即可使用
+
+llm:
+  # 提供者（DeepSeek 兼容 OpenAI 协议，填 openai 即可）
+  provider: "openai"
+  # 你的 DeepSeek API Key（必填，替换成自己的）
+  api_key: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  # DeepSeek API 基础地址（固定值，无需修改）
+  base_url: "https://api.deepseek.com"
+  # DeepSeek 聊天模型名称（固定值，无需修改）
+  model: "deepseek-chat"
+  # 生成内容随机性（0-1，推荐 0.7）
+  temperature: 0.7
+  # 单次生成最大字符数（按需调整）
+  max_tokens: 2000
+  # 请求超时时间（秒）
+  timeout: 30
+
+# （可选）股票数据配置（如需真实行情数据）
+stock:
+  # Tushare Token（可选，没有则用模拟数据）
+  tushare_token: "your_tushare_token_here"
+  # 默认分析的股票代码
+  default_symbol: "600000.SH"
+  # 分析类型（comprehensive/technical/fundamental）
+  default_analysis_type: "comprehensive"
+
+# 输出配置
+output:
+  # 分析结果保存路径
+  save_path: "./analysis_results"
+  # 是否生成 markdown 报告
+  generate_markdown: true
+  # 是否输出到控制台
+  print_to_console: true
