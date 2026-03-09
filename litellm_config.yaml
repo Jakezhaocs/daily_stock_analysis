@@ -1,36 +1,75 @@
-# LLM 模型配置（适配 DeepSeek API）
-# 复制此文件为 llm_config.yaml 后替换 API Key 即可使用
+# ===================================
+# LiteLLM Router 配置模板
+# ===================================
+# 配套文档：docs/LLM_CONFIG_GUIDE.md 第 3.2 节
+#
+# 用法：
+# 1. 复制此文件为 litellm_config.yaml
+# 2. 在 .env 中设置 LITELLM_CONFIG=./litellm_config.yaml
+# 3. 按需配置下面的 model_list
+#
+# 密钥引用格式：
+#   api_key: "os.environ/ENV_VAR_NAME"  → 从环境变量读取，避免明文写入文件
+#   api_key: "sk-xxxxxxxx"              → 直接写入（不推荐）
+#
+# 更多文档: https://docs.litellm.ai/docs/proxy/configs
+# ===================================
 
-llm:
-  # 提供者（DeepSeek 兼容 OpenAI 协议，填 openai 即可）
-  provider: "openai"
-  # 你的 DeepSeek API Key（必填，替换成自己的）
-  api_key: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  # DeepSeek API 基础地址（固定值，无需修改）
-  base_url: "https://api.deepseek.com"
-  # DeepSeek 聊天模型名称（固定值，无需修改）
-  model: "deepseek-chat"
-  # 生成内容随机性（0-1，推荐 0.7）
-  temperature: 0.7
-  # 单次生成最大字符数（按需调整）
-  max_tokens: 2000
-  # 请求超时时间（秒）
-  timeout: 30
+model_list:
+  # --- AIHubmix (OpenAI 兼容，一个 Key 使用多种模型) ---
+  - model_name: openai/gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: "os.environ/AIHUBMIX_KEY"
+      api_base: https://aihubmix.com/v1
 
-# （可选）股票数据配置（如需真实行情数据）
-stock:
-  # Tushare Token（可选，没有则用模拟数据）
-  tushare_token: "your_tushare_token_here"
-  # 默认分析的股票代码
-  default_symbol: "600000.SH"
-  # 分析类型（comprehensive/technical/fundamental）
-  default_analysis_type: "comprehensive"
+  - model_name: openai/claude-3-5-sonnet-20241022
+    litellm_params:
+      model: openai/claude-3-5-sonnet-20241022
+      api_key: "os.environ/AIHUBMIX_KEY"
+      api_base: https://aihubmix.com/v1
 
-# 输出配置
-output:
-  # 分析结果保存路径
-  save_path: "./analysis_results"
-  # 是否生成 markdown 报告
-  generate_markdown: true
-  # 是否输出到控制台
-  print_to_console: true
+  # --- DeepSeek 官方 API (原生 provider，自动解析 base_url) ---
+  - model_name: deepseek/deepseek-chat
+    litellm_params:
+      model: deepseek/deepseek-chat
+      api_key: "os.environ/DEEPSEEK_API_KEY"
+
+  - model_name: deepseek/deepseek-reasoner
+    litellm_params:
+      model: deepseek/deepseek-reasoner
+      api_key: "os.environ/DEEPSEEK_API_KEY"
+
+  # --- Google Gemini (原生，多 Key 负载均衡) ---
+  - model_name: gemini/gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: "os.environ/GEMINI_API_KEY_1"
+
+  - model_name: gemini/gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: "os.environ/GEMINI_API_KEY_2"
+
+  # --- Anthropic Claude (原生) ---
+  # - model_name: anthropic/claude-3-5-sonnet-20241022
+  #   litellm_params:
+  #     model: anthropic/claude-3-5-sonnet-20241022
+  #     api_key: "os.environ/ANTHROPIC_API_KEY"
+
+  # --- OpenRouter (聚合平台) ---
+  # - model_name: openai/meta-llama/llama-3-70b-instruct
+  #   litellm_params:
+  #     model: openai/meta-llama/llama-3-70b-instruct
+  #     api_key: "os.environ/OPENROUTER_API_KEY"
+  #     api_base: https://openrouter.ai/api/v1
+
+# ===================================
+# Router 设置（可选）
+# ===================================
+router_settings:
+  routing_strategy: simple-shuffle    # simple-shuffle / least-busy / latency-based
+  num_retries: 2                      # 单个 deployment 失败后重试次数
+  # timeout: 30                       # 请求超时（秒）
+  # allowed_fails: 3                  # deployment 被冷却前允许的失败次数
+  # cooldown_time: 60                 # deployment 冷却时间（秒）
